@@ -74,6 +74,8 @@ reverseSecondLevelDomain = Trie()
 with open(sys.argv[1]) as f:
     for line in f:
         totalDomainCount += 1
+        if totalDomainCount % 100000 == 0:
+            print ('Progress: finishing ' + str(totalDomainCount))
         try:
             jsonObj = ujson.loads(line)
             domainName = jsonObj['name']
