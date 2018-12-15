@@ -65,10 +65,10 @@ unqiueDomainCount = 0
 uniqueSecondLevelDomainCount = 0
 emptyAnswersCount = 0
 
-answerTypes = ['A', 'AAAA', 'ANY', 'AXFR', 'CAA', 'CNAME', 'DMARC', 'MX', 'NS', 'PTR', 'TXT', 'SOA', 'SPF']
+#answerTypes = ['A', 'AAAA', 'ANY', 'AXFR', 'CAA', 'CNAME', 'DMARC', 'MX', 'NS', 'PTR', 'TXT', 'SOA', 'SPF']
 answersDict = {}
-for answerType in answerTypes:
-    answersDict[answerType] = 0
+#for answerType in answerTypes:
+#    answersDict[answerType] = 0
 reverseDomain = Trie()
 reverseSecondLevelDomain = Trie()
 with open(sys.argv[1]) as f:
@@ -80,15 +80,28 @@ with open(sys.argv[1]) as f:
             if (reverseDomain.insert(reversed(domainName))):
                 unqiueDomainCount += 1
             domainNameParts = domainName.split('.')
-            if (reverseSecondLevelDomain.insert(reversed(domainNameParts[-1]+'.'+domainNameParts[-2]))):
+            if len(domainNameParts) < 2:
+                continue
+            if (reverseSecondLevelDomain.insert(reversed(domainNameParts[-2]+'.'+domainNameParts[-1]))):
                 uniqueSecondLevelDomainCount += 1
-            if len(jsonObj['data']['answers']) == 0:
+            if jsonObj['data']['answers'] == None or len(jsonObj['data']['answers']) == 0:
                 emptyAnswersCount += 1
             else :
                 for answer in jsonObj['data']['answers']:
-                    answersDict[answer['type']] += 1
-        except:
-            print ('error deadline with ' + line)
+                    type = ''
+                    #print (answer)
+                    if 'type' in answer:
+                        type = answer['type']
+                    elif 'Answer' in answer and 'type' in answer['Answer']:
+                        type = answer['Answer']['type']
+                    else :
+                        continue
+                    if type not in answersDict.keys():
+                        answersDict[type] = 0
+                    answersDict[type] += 1
+        except Exception as e:
+            print ('error dealing with ' + line)
+            print ('incur error: ' + str(e))
 
 print ('totalDomainCount: ' + str(totalDomainCount))
 print ('unqiueDomainCount: ' + str(unqiueDomainCount))
