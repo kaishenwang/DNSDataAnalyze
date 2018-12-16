@@ -59,7 +59,7 @@ class Trie:
 
 if len(sys.argv) != 2:
     print ('Wrong command format.')
-    pass
+    sys.exit(1)
 totalDomainCount = 0
 unqiueDomainCount = 0
 uniqueSecondLevelDomainCount = 0
@@ -113,3 +113,4 @@ print ('emptyAnswersCount: ' + str(p)[:6] + '%')
 for k,v in answersDict.items():
     p = v * 1.0 / totalDomainCount * 100.0
     print (k + ': ' + str(p)[:6] + '%')
+sys.exit(0)
