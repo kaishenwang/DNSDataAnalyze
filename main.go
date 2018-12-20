@@ -87,8 +87,15 @@ func writeToFile (fileName string, answerRecords chan* string, wg *sync.WaitGrou
 	(*wg).Done()
 }
 
-func parseJsonFile(fileName string) {
-	jsonFile, err := os.Open(fileName)
+func parseJsonFile(fileName string, dirLocation string) {
+	fullPath := ""
+	if len(dirLocation) > 0 && dirLocation[len(dirLocation)-1] != '/' {
+		fullPath = dirLocation + "/" + fileName
+	} else {
+		fullPath = dirLocation + fileName
+	}
+
+	jsonFile, err := os.Open(fullPath)
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
@@ -127,7 +134,7 @@ func main() {
 	for _, file := range files {
 		fName := file.Name()
 		if len(fName) > 5 && fName[len(fName)-5:] == ".json" {
-			parseJsonFile(fName)
+			parseJsonFile(fName, *dirPath)
 		}
 	}
 }
