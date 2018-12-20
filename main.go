@@ -48,7 +48,8 @@ type record struct {
 }
 
 var (
-	dirPath = flag.String("dirPath",".","Path of the input directory.")
+	inputDirPath = flag.String("inDirPath",".","Path of the input directory.")
+	outputDirPath = flag.String("outDirPath",".","Path of the output directory.")
 )
 
 func parseJsonString (fileName string, plainStrings chan* string, answerRecords chan* string, wg *sync.WaitGroup) {
@@ -73,9 +74,15 @@ func parseJsonString (fileName string, plainStrings chan* string, answerRecords 
 }
 
 func writeToFile (fileName string, answerRecords chan* string, wg *sync.WaitGroup) {
+	fullPath := ""
+	if len(*outputDirPath) > 0 && (*outputDirPath)[len(*outputDirPath)-1] != '/' {
+		fullPath = (*outputDirPath) + "/" + fileName
+	} else {
+		fullPath = (*outputDirPath) + fileName
+	}
 	for answerRecord := range(answerRecords) {
 		parts := strings.Split(*answerRecord, " ")
-		f, err := os.OpenFile(fileName[:len(fileName)-5]+"_"+parts[0]+".csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		f, err := os.OpenFile(fullPath[:len(fullPath)-5]+"_"+parts[0]+".csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -87,12 +94,12 @@ func writeToFile (fileName string, answerRecords chan* string, wg *sync.WaitGrou
 	(*wg).Done()
 }
 
-func parseJsonFile(fileName string, dirLocation string) {
+func parseJsonFile(fileName string) {
 	fullPath := ""
-	if len(dirLocation) > 0 && dirLocation[len(dirLocation)-1] != '/' {
-		fullPath = dirLocation + "/" + fileName
+	if len(*inputDirPath) > 0 && (*inputDirPath)[len(*inputDirPath)-1] != '/' {
+		fullPath = (*inputDirPath) + "/" + fileName
 	} else {
-		fullPath = dirLocation + fileName
+		fullPath = (*inputDirPath) + fileName
 	}
 
 	jsonFile, err := os.Open(fullPath)
@@ -126,7 +133,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
-	files, err := ioutil.ReadDir(*dirPath)
+	files, err := ioutil.ReadDir(*inputDirPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,7 +141,7 @@ func main() {
 	for _, file := range files {
 		fName := file.Name()
 		if len(fName) > 5 && fName[len(fName)-5:] == ".json" {
-			parseJsonFile(fName, *dirPath)
+			parseJsonFile(fName)
 		}
 	}
 }
