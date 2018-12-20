@@ -81,16 +81,27 @@ func writeToFile (fileName string, answerRecords chan* string, wg *sync.WaitGrou
 	} else {
 		fullPath = (*outputDirPath) + fileName
 	}
+	fpDict := make(map[string]*os.File)
 	for answerRecord := range(answerRecords) {
 		parts := strings.Split(*answerRecord, " ")
-		f, err := os.OpenFile(fullPath[:len(fullPath)-5]+"_"+parts[0]+".csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatal(err)
+		f, ok := fpDict[parts[0]]
+		if !ok {
+			ftmp, err := os.OpenFile(fullPath[:len(fullPath)-5]+"_"+parts[0]+".csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+			} else {
+				defer ftmp.Close()
+				fpDict[parts[0]] = ftmp
+				f, _ = fpDict[parts[0]]
+			}
 		}
-		defer f.Close()
+
 		f.WriteString(parts[1] + "\n")
-		f.Close()
+
 		//fmt.Println(*answerRecord)
+	}
+	for _, f := range fpDict {
+		f.Close()
 	}
 	(*wg).Done()
 }
