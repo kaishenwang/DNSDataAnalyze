@@ -10,6 +10,7 @@ import (
 	"strings"
 	"flag"
 	"io/ioutil"
+	"time"
 )
 
 type answerType struct {
@@ -128,6 +129,7 @@ func parseJsonFile(fileName string) {
 }
 
 func main() {
+	start := time.Now()
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "", os.Args[0])
 		flag.PrintDefaults()
@@ -144,4 +146,14 @@ func main() {
 			parseJsonFile(fName)
 		}
 	}
+	elapsed := time.Since(start)
+	timeCostFile, err := os.Create("timeCost.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer timeCostFile.Close()
+	w := bufio.NewWriter(timeCostFile)
+	w.WriteString(elapsed.String())
+	w.Flush()
+	fmt.Println("Finished")
 }
